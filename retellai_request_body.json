@@ -1,0 +1,657 @@
+{
+    "call":
+    {
+        "call_id": "call_8d6086e74c719e8c1baf3dcf465",
+        "call_type": "web_call",
+        "agent_id": "agent_eef1df25468627ecdf658805e1",
+        "call_status": "ongoing",
+        "start_timestamp": 1741993502690,
+        "transcript": "Agent: Hello Sam, this is Kathrine from Magic Cars. How are you today? Am I catching you at a good time?\nUser: Uh, Catherine, can you check my order status, please?\nUser: K.\nAgent: Of course, Sam! Could you please provide your order number so I can look it up for you?\nUser: My order number is 12345.\n",
+        "transcript_object":
+        [
+            {
+                "role": "agent",
+                "content": "Hello Sam, this is Kathrine from Magic Cars. How are you today? Am I catching you at a good time?",
+                "words":
+                [
+                    {
+                        "word": "Hello ",
+                        "start": 0.152,
+                        "end": 0.419
+                    },
+                    {
+                        "word": "Sam, ",
+                        "start": 0.419,
+                        "end": 0.698
+                    },
+                    {
+                        "word": "this ",
+                        "start": 0.698,
+                        "end": 0.883
+                    },
+                    {
+                        "word": "is ",
+                        "start": 0.883,
+                        "end": 1.023
+                    },
+                    {
+                        "word": "Kathrine ",
+                        "start": 1.023,
+                        "end": 1.325
+                    },
+                    {
+                        "word": "from ",
+                        "start": 1.325,
+                        "end": 1.475
+                    },
+                    {
+                        "word": "Magic ",
+                        "start": 1.475,
+                        "end": 1.754
+                    },
+                    {
+                        "word": "Cars.",
+                        "start": 1.754,
+                        "end": 2.323
+                    },
+                    {
+                        "word": " How ",
+                        "start": 2.36825,
+                        "end": 2.53125
+                    },
+                    {
+                        "word": "are ",
+                        "start": 2.53125,
+                        "end": 2.67025
+                    },
+                    {
+                        "word": "you ",
+                        "start": 2.67025,
+                        "end": 2.77525
+                    },
+                    {
+                        "word": "today?",
+                        "start": 2.77525,
+                        "end": 3.34425
+                    },
+                    {
+                        "word": " Am ",
+                        "start": 3.389166748046875,
+                        "end": 3.517166748046875
+                    },
+                    {
+                        "word": "I ",
+                        "start": 3.517166748046875,
+                        "end": 3.598166748046875
+                    },
+                    {
+                        "word": "catching ",
+                        "start": 3.598166748046875,
+                        "end": 3.923166748046875
+                    },
+                    {
+                        "word": "you ",
+                        "start": 3.923166748046875,
+                        "end": 4.028166748046875
+                    },
+                    {
+                        "word": "at ",
+                        "start": 4.028166748046875,
+                        "end": 4.109166748046875
+                    },
+                    {
+                        "word": "a ",
+                        "start": 4.109166748046875,
+                        "end": 4.167166748046875
+                    },
+                    {
+                        "word": "good ",
+                        "start": 4.167166748046875,
+                        "end": 4.341166748046875
+                    },
+                    {
+                        "word": "time?",
+                        "start": 4.341166748046875,
+                        "end": 4.968166748046875
+                    }
+                ],
+                "metadata":
+                {
+                    "response_id": 0
+                }
+            },
+            {
+                "role": "user",
+                "content": "Uh, Catherine, can you check my order status, please?",
+                "words":
+                [
+                    {
+                        "word": "Uh, ",
+                        "start": 11.045,
+                        "end": 11.365
+                    },
+                    {
+                        "word": "Catherine, ",
+                        "start": 11.365,
+                        "end": 11.844999999999999
+                    },
+                    {
+                        "word": "can ",
+                        "start": 11.844999999999999,
+                        "end": 12.004999999999999
+                    },
+                    {
+                        "word": "you ",
+                        "start": 12.004999999999999,
+                        "end": 12.245000000000001
+                    },
+                    {
+                        "word": "check ",
+                        "start": 12.245000000000001,
+                        "end": 12.405000000000001
+                    },
+                    {
+                        "word": "my ",
+                        "start": 12.405000000000001,
+                        "end": 12.644998999999999
+                    },
+                    {
+                        "word": "order ",
+                        "start": 12.644998999999999,
+                        "end": 12.965
+                    },
+                    {
+                        "word": "status, ",
+                        "start": 12.965,
+                        "end": 13.364999999999998
+                    },
+                    {
+                        "word": "please?",
+                        "start": 13.364999999999998,
+                        "end": 13.765
+                    }
+                ]
+            },
+            {
+                "role": "user",
+                "content": "K.",
+                "words":
+                [
+                    {
+                        "word": "K.",
+                        "start": 14.805,
+                        "end": 15.305
+                    }
+                ]
+            },
+            {
+                "role": "agent",
+                "content": "Of course, Sam! Could you please provide your order number so I can look it up for you?",
+                "words":
+                [
+                    {
+                        "word": "Of ",
+                        "start": 14.693,
+                        "end": 14.855
+                    },
+                    {
+                        "word": "course, ",
+                        "start": 14.855,
+                        "end": 15.111
+                    },
+                    {
+                        "word": "Sam!",
+                        "start": 15.111,
+                        "end": 15.703
+                    },
+                    {
+                        "word": " Could ",
+                        "start": 15.71425,
+                        "end": 15.92325
+                    },
+                    {
+                        "word": "you ",
+                        "start": 15.92325,
+                        "end": 16.02725
+                    },
+                    {
+                        "word": "please ",
+                        "start": 16.02725,
+                        "end": 16.27125
+                    },
+                    {
+                        "word": "provide ",
+                        "start": 16.27125,
+                        "end": 16.58425
+                    },
+                    {
+                        "word": "your ",
+                        "start": 16.58425,
+                        "end": 16.72425
+                    },
+                    {
+                        "word": "order ",
+                        "start": 16.72425,
+                        "end": 16.95625
+                    },
+                    {
+                        "word": "number ",
+                        "start": 16.95625,
+                        "end": 17.18825
+                    },
+                    {
+                        "word": "so ",
+                        "start": 17.18825,
+                        "end": 17.32725
+                    },
+                    {
+                        "word": "I ",
+                        "start": 17.32725,
+                        "end": 17.40925
+                    },
+                    {
+                        "word": "can ",
+                        "start": 17.40925,
+                        "end": 17.56025
+                    },
+                    {
+                        "word": "look ",
+                        "start": 17.56025,
+                        "end": 17.74525
+                    },
+                    {
+                        "word": "it ",
+                        "start": 17.74525,
+                        "end": 17.85025
+                    },
+                    {
+                        "word": "up ",
+                        "start": 17.85025,
+                        "end": 17.98925
+                    },
+                    {
+                        "word": "for ",
+                        "start": 17.98925,
+                        "end": 18.14025
+                    },
+                    {
+                        "word": "you?",
+                        "start": 18.14025,
+                        "end": 18.62825
+                    }
+                ],
+                "metadata":
+                {
+                    "response_id": 1
+                }
+            },
+            {
+                "role": "user",
+                "content": "My order number is 12345.",
+                "words":
+                [
+                    {
+                        "word": "My ",
+                        "start": 20.535,
+                        "end": 20.775000000000002
+                    },
+                    {
+                        "word": "order ",
+                        "start": 20.775000000000002,
+                        "end": 21.255
+                    },
+                    {
+                        "word": "number ",
+                        "start": 21.255,
+                        "end": 21.755
+                    },
+                    {
+                        "word": "is ",
+                        "start": 22.055,
+                        "end": 22.305
+                    },
+                    {
+                        "word": "12345.",
+                        "start": 22.305,
+                        "end": 22.805
+                    }
+                ]
+            }
+        ],
+        "transcript_with_tool_calls":
+        [
+            {
+                "role": "agent",
+                "content": "Hello Sam, this is Kathrine from Magic Cars. How are you today? Am I catching you at a good time?",
+                "words":
+                [
+                    {
+                        "word": "Hello ",
+                        "start": 0.152,
+                        "end": 0.419
+                    },
+                    {
+                        "word": "Sam, ",
+                        "start": 0.419,
+                        "end": 0.698
+                    },
+                    {
+                        "word": "this ",
+                        "start": 0.698,
+                        "end": 0.883
+                    },
+                    {
+                        "word": "is ",
+                        "start": 0.883,
+                        "end": 1.023
+                    },
+                    {
+                        "word": "Kathrine ",
+                        "start": 1.023,
+                        "end": 1.325
+                    },
+                    {
+                        "word": "from ",
+                        "start": 1.325,
+                        "end": 1.475
+                    },
+                    {
+                        "word": "Magic ",
+                        "start": 1.475,
+                        "end": 1.754
+                    },
+                    {
+                        "word": "Cars.",
+                        "start": 1.754,
+                        "end": 2.323
+                    },
+                    {
+                        "word": " How ",
+                        "start": 2.36825,
+                        "end": 2.53125
+                    },
+                    {
+                        "word": "are ",
+                        "start": 2.53125,
+                        "end": 2.67025
+                    },
+                    {
+                        "word": "you ",
+                        "start": 2.67025,
+                        "end": 2.77525
+                    },
+                    {
+                        "word": "today?",
+                        "start": 2.77525,
+                        "end": 3.34425
+                    },
+                    {
+                        "word": " Am ",
+                        "start": 3.389166748046875,
+                        "end": 3.517166748046875
+                    },
+                    {
+                        "word": "I ",
+                        "start": 3.517166748046875,
+                        "end": 3.598166748046875
+                    },
+                    {
+                        "word": "catching ",
+                        "start": 3.598166748046875,
+                        "end": 3.923166748046875
+                    },
+                    {
+                        "word": "you ",
+                        "start": 3.923166748046875,
+                        "end": 4.028166748046875
+                    },
+                    {
+                        "word": "at ",
+                        "start": 4.028166748046875,
+                        "end": 4.109166748046875
+                    },
+                    {
+                        "word": "a ",
+                        "start": 4.109166748046875,
+                        "end": 4.167166748046875
+                    },
+                    {
+                        "word": "good ",
+                        "start": 4.167166748046875,
+                        "end": 4.341166748046875
+                    },
+                    {
+                        "word": "time?",
+                        "start": 4.341166748046875,
+                        "end": 4.968166748046875
+                    }
+                ],
+                "metadata":
+                {
+                    "response_id": 0
+                }
+            },
+            {
+                "role": "user",
+                "content": "Uh, Catherine, can you check my order status, please?",
+                "words":
+                [
+                    {
+                        "word": "Uh, ",
+                        "start": 11.045,
+                        "end": 11.365
+                    },
+                    {
+                        "word": "Catherine, ",
+                        "start": 11.365,
+                        "end": 11.844999999999999
+                    },
+                    {
+                        "word": "can ",
+                        "start": 11.844999999999999,
+                        "end": 12.004999999999999
+                    },
+                    {
+                        "word": "you ",
+                        "start": 12.004999999999999,
+                        "end": 12.245000000000001
+                    },
+                    {
+                        "word": "check ",
+                        "start": 12.245000000000001,
+                        "end": 12.405000000000001
+                    },
+                    {
+                        "word": "my ",
+                        "start": 12.405000000000001,
+                        "end": 12.644998999999999
+                    },
+                    {
+                        "word": "order ",
+                        "start": 12.644998999999999,
+                        "end": 12.965
+                    },
+                    {
+                        "word": "status, ",
+                        "start": 12.965,
+                        "end": 13.364999999999998
+                    },
+                    {
+                        "word": "please?",
+                        "start": 13.364999999999998,
+                        "end": 13.765
+                    }
+                ]
+            },
+            {
+                "role": "user",
+                "content": "K.",
+                "words":
+                [
+                    {
+                        "word": "K.",
+                        "start": 14.805,
+                        "end": 15.305
+                    }
+                ]
+            },
+            {
+                "role": "agent",
+                "content": "Of course, Sam! Could you please provide your order number so I can look it up for you?",
+                "words":
+                [
+                    {
+                        "word": "Of ",
+                        "start": 14.693,
+                        "end": 14.855
+                    },
+                    {
+                        "word": "course, ",
+                        "start": 14.855,
+                        "end": 15.111
+                    },
+                    {
+                        "word": "Sam!",
+                        "start": 15.111,
+                        "end": 15.703
+                    },
+                    {
+                        "word": " Could ",
+                        "start": 15.71425,
+                        "end": 15.92325
+                    },
+                    {
+                        "word": "you ",
+                        "start": 15.92325,
+                        "end": 16.02725
+                    },
+                    {
+                        "word": "please ",
+                        "start": 16.02725,
+                        "end": 16.27125
+                    },
+                    {
+                        "word": "provide ",
+                        "start": 16.27125,
+                        "end": 16.58425
+                    },
+                    {
+                        "word": "your ",
+                        "start": 16.58425,
+                        "end": 16.72425
+                    },
+                    {
+                        "word": "order ",
+                        "start": 16.72425,
+                        "end": 16.95625
+                    },
+                    {
+                        "word": "number ",
+                        "start": 16.95625,
+                        "end": 17.18825
+                    },
+                    {
+                        "word": "so ",
+                        "start": 17.18825,
+                        "end": 17.32725
+                    },
+                    {
+                        "word": "I ",
+                        "start": 17.32725,
+                        "end": 17.40925
+                    },
+                    {
+                        "word": "can ",
+                        "start": 17.40925,
+                        "end": 17.56025
+                    },
+                    {
+                        "word": "look ",
+                        "start": 17.56025,
+                        "end": 17.74525
+                    },
+                    {
+                        "word": "it ",
+                        "start": 17.74525,
+                        "end": 17.85025
+                    },
+                    {
+                        "word": "up ",
+                        "start": 17.85025,
+                        "end": 17.98925
+                    },
+                    {
+                        "word": "for ",
+                        "start": 17.98925,
+                        "end": 18.14025
+                    },
+                    {
+                        "word": "you?",
+                        "start": 18.14025,
+                        "end": 18.62825
+                    }
+                ],
+                "metadata":
+                {
+                    "response_id": 1
+                }
+            },
+            {
+                "role": "user",
+                "content": "My order number is 12345.",
+                "words":
+                [
+                    {
+                        "word": "My ",
+                        "start": 20.535,
+                        "end": 20.775000000000002
+                    },
+                    {
+                        "word": "order ",
+                        "start": 20.775000000000002,
+                        "end": 21.255
+                    },
+                    {
+                        "word": "number ",
+                        "start": 21.255,
+                        "end": 21.755
+                    },
+                    {
+                        "word": "is ",
+                        "start": 22.055,
+                        "end": 22.305
+                    },
+                    {
+                        "word": "12345.",
+                        "start": 22.305,
+                        "end": 22.805
+                    }
+                ]
+            },
+            {
+                "role": "tool_call_invocation",
+                "tool_call_id": "4d2b27a9d00882c2",
+                "name": "getOrder",
+                "arguments": "{'orderNumber':'12345'}"
+            }
+        ],
+        "latency":
+        {},
+        "call_cost":
+        {
+            "total_duration_unit_price": 0,
+            "product_costs":
+            [],
+            "total_one_time_price": 0,
+            "combined_cost": 0,
+            "total_duration_seconds": 0
+        },
+        "opt_out_sensitive_data_storage": false,
+        "access_token": "eyJhbGciOiJIUzI1NiJ9.eyJ2aWRlbyI6eyJyb29tSm9pbiI6dHJ1ZSwicm9vbSI6IndlYl9jYWxsXzhkNjA4NmU3NGM3MTllOGMxYmFmM2RjZjQ2NSJ9LCJpc3MiOiJBUElqWGZBMzVHTmM3WHgiLCJleHAiOjE3NDE5OTQxMDEsIm5iZiI6MCwic3ViIjoiY2xpZW50In0.UDYVrZpAKRxPPeVd_TEnFEzej04y9GElMDSU3j8-YKg"
+    },
+    "name": "getOrder",
+    "args":
+    {
+        "orderNumber": "12345"
+    }
+}

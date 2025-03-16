@@ -6,12 +6,15 @@ import datetime
 import logging
 import json
 import uvicorn
+from shopifyapi import ShopifyApp
+import os
 
 app = FastAPI()
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 # Mock database for orders, products, and shipments
 orders_db = {
@@ -65,44 +68,47 @@ shipments_db = {
     }
 }
 
-# Pydantic models for request/response validation
-class OrderStatusRequest(BaseModel):
-    orderNumber: str
-
-class ProductDetailsRequest(BaseModel):
-    productName: str
-
-class ShipmentStatusRequest(BaseModel):
-    orderNumber: str
-
 # Custom function: Get order status
 @app.post("/getorder")
 async def get_order_status(request: Request):
     try:
-        data = await request.json()
+        # Define Shopify App
+        s = ShopifyApp(store_name=os.getenv('STORE_NAME'), access_token=os.getenv('SHOPIFY_ACCESS_TOKEN'), api_version=os.getenv('API_VERSION'))
+        client = s.create_session()
 
+        data = await request.json()
         orderNumber = data['args']['orderNumber']
 
-        if orderNumber in orders_db:
-            orderDetails = orders_db[orderNumber]
-            responseMessage = f"Your order {orderNumber} is currently {orderDetails['status']}. It was placed on {orderDetails['orderDate']} and is estimated to arrive by {orderDetails['estimatedDelivery']}."
+        response = s.get_orders(client, orderNumber)
+
+        print(response.json())
+        
+        # if orderNumber in orders_db:
+        #     orderDetails = orders_db[orderNumber]
+        #     responseMessage = f"Your order {orderNumber} is currently {orderDetails['status']}. It was placed on {orderDetails['orderDate']} and is estimated to arrive by {orderDetails['estimatedDelivery']}."
             
-            return JSONResponse(status_code=200, content={"result": responseMessage})
-        else:
-            raise HTTPException(status_code=404, detail="Order not found")
+        #     return JSONResponse(status_code=200, content={"result": responseMessage})
+        # else:
+        #     raise HTTPException(status_code=404, detail="Order not found")
     except Exception as e:
         logger.error(f"Failed to parse request body: {e}")
         raise HTTPException(status_code=400, detail="Invalid request body")
 
 # Custom function: Get product details
 @app.post("/getproduct")
-def get_product_details(request: ProductDetailsRequest):
+async def get_product_details(request: Request):
     try:
-        body = request.json()
-        logger.info(f"Incoming request body: {json.dumps(body, indent=2)}")
-        productName = request.productName
+        # Define Shopify App
+        s = ShopifyApp(store_name=os.getenv('STORE_NAME'), access_token=os.getenv('SHOPIFY_ACCESS_TOKEN'), api_version=os.getenv('API_VERSION'))
+        client = s.create_session()
+        
+        data = await request.json()
+        productName = data['args']['productName']
         if productName in products_db:
-            return products_db[productName]
+            productDetails = products_db['productName']
+            responseMessage = f"Your order {orderNumber} is currently {productDetails['status']}. It was placed on {productDetails['orderDate']} and is estimated to arrive by {productDetails['estimatedDelivery']}."
+
+            return JSONResponse(status_code=200, content={"result": responseMessage})
         else:
             raise HTTPException(status_code=404, detail="Product not found")
     except Exception as e:
@@ -111,13 +117,20 @@ def get_product_details(request: ProductDetailsRequest):
 
 # Custom function: Check shipment status
 @app.post("/shipment")
-def check_shipment_status(request: ShipmentStatusRequest):
+async def check_shipment_status(request: Request):
     try:
-        body = request.json()
-        logger.info(f"Incoming request body: {json.dumps(body, indent=2)}")
-        orderNumber = request.orderNumber
-        if orderNumber in shipments_db:
-            return shipments_db[orderNumber]
+        # Define Shopify App
+        s = ShopifyApp(store_name=os.getenv('STORE_NAME'), access_token=os.getenv('SHOPIFY_ACCESS_TOKEN'), api_version=os.getenv('API_VERSION'))
+        client = s.create_session()
+
+        data = await request.json()
+        airwayBill = request.airwayBill
+
+        if airwayBill in shipments_db:
+            shipmentDetails = shipments_db['airwayBill']
+            responseMessage = f"Your order {airwayBill} is currently {shipmentDetails['status']}. It was placed on {shipmentDetails['orderDate']} and is estimated to arrive by {shipmentDetails['estimatedDelivery']}."
+
+            return JSONResponse(status_code=200, content={"result": responseMessage})
         else:
             raise HTTPException(status_code=404, detail="Shipment not found")
     except Exception as e:
@@ -131,4 +144,4 @@ def read_root():
 
 # Run the server
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+    uvicorn.run("main:app", host="0.0.0.0", port=5000, reload=True)

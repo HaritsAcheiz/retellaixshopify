@@ -9,8 +9,10 @@ from dotenv import load_dotenv
 from datetime import datetime, date
 from converter import csv_to_jsonl, get_handles
 import re
+import logging
 
 load_dotenv()
+logging.basicConfig(level=logging.INFO)
 
 
 @dataclass
@@ -18,11 +20,48 @@ class ShopifyApp:
     store_name: str = None
     access_token: str = None
     api_version: str = None
+    api_url: str = None
+    retries: int = 2
+    timeout: float = 3
+    version: str = '2025-01'
 
     # Common Function
     ## Get URL
     def get_file_url(self, response):
         return response['data']['fileCreate']['files'][0]['preview']['image']['url']
+
+    ## Send Request
+    def send_request(self, client, query, variables=None):
+        for attempt in range(1, self.retries + 1):
+            try:
+                response = client.post(
+                    self.api_url,
+                    json={"query": query, "variables": variables},
+                    timeout=self.timeout
+                )
+
+                # Raise an HTTP error for non-success status codes
+                response.raise_for_status()
+
+                data = response.json()
+
+                # Check for API-specific errors
+                if 'errors' in data:
+                    print(data)
+                    raise ValueError(f"Shopify API Error: {data['errors']}")
+
+                return response
+
+            except httpx.TimeoutException:
+                logging.warning(f"Timeout on attempt {attempt}/{self.retries}")
+            except httpx.RequestError as e:
+                logging.error(f"Request failed on attempt {attempt}/{self.retries}: {e}")
+            except ValueError as ve:
+                logging.error(f"Shopify API returned an error: {ve}")
+                raise ve  # Reraise if it's an API error
+
+        # If all retries fail, raise an exception
+        raise RuntimeError("Failed to send request after multiple attempts.")
 
     # Create
     ## Session
@@ -34,6 +73,7 @@ class ShopifyApp:
             'Content-Type': 'application/json'
         }
         client.headers.update(headers)
+        self.api_url = f'https://{self.store_name}.myshopify.com/admin/api/{self.version}/graphql.json'
 
         return client
 
@@ -876,6 +916,26 @@ class ShopifyApp:
         print('')
 
         return response.json()
+
+    ## Order
+    def get_orders(self, client, order_number):
+        query = '''
+                query getOrders($query:String!){
+                    orders(first:250, query:$query) {
+                        edges {
+                            node {
+                                id
+                                }
+                            }
+                        }
+                    }
+                '''
+
+        variables = {'query': "name:{}".format(order_number)}
+
+        response = self.send_request(client, query=query, variables=variables)
+
+        return response
 
     # Update
     ## Product
