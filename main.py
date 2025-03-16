@@ -81,15 +81,62 @@ async def get_order_status(request: Request):
 
         response = s.get_orders(client, orderNumber)
 
-        print(response.json())
-        
-        # if orderNumber in orders_db:
-        #     orderDetails = orders_db[orderNumber]
-        #     responseMessage = f"Your order {orderNumber} is currently {orderDetails['status']}. It was placed on {orderDetails['orderDate']} and is estimated to arrive by {orderDetails['estimatedDelivery']}."
-            
-        #     return JSONResponse(status_code=200, content={"result": responseMessage})
-        # else:
-        #     raise HTTPException(status_code=404, detail="Order not found")
+        order_data = response.json()
+        order = order_data['data']['orders']['edges'][0]['node']
+        order_number = order['name']
+
+        if orderNumber == order_number:
+            line_items = order['lineItems']['edges']
+            subtotal_quantity = order['currentSubtotalLineItemsQuantity']
+            subtotal_price = order['currentSubtotalPriceSet']['shopMoney']['amount']
+            currency = order['lineItems']['edges'][0]['node']['originalUnitPriceSet']['shopMoney']['currencyCode']
+            total_weight = order['currentTotalWeight']
+            payment_gateway = order['paymentGatewayNames'][0]
+            shipping_method = order['shippingLines']['edges'][0]['node']['title']
+            shipping_cost = order['shippingLines']['edges'][0]['node']['currentDiscountedPriceSet']['shopMoney']['amount']
+            financial_status = order['displayFinancialStatus']
+            fulfillment_status = order['displayFulfillmentStatus']
+            return_status = order['returnStatus']
+            cancellation = order['cancellation']
+            cancel_reason = order['cancelReason']
+            cancelled_at = order['cancelledAt']
+            created_at = order['createdAt']
+            closed_at = order['closedAt']
+
+            # Format the list of items
+            items_list = []
+            for item in line_items:
+                item_name = item['node']['name']
+                item_quantity = item['node']['currentQuantity']
+                item_price = item['node']['originalUnitPriceSet']['shopMoney']['amount']
+                items_list.append(f"{item_quantity} {item_name} for {currency}{item_price}")
+
+            # Join the items into a natural-sounding sentence
+            if len(items_list) == 1:
+                items_description = items_list[0]
+            elif len(items_list) == 2:
+                items_description = f"{items_list[0]} and {items_list[1]}"
+            else:
+                items_description = ", ".join(items_list[:-1]) + f", and {items_list[-1]}"
+
+            # Format the response using f-string with natural language
+            responseMessage = (
+                f"Your order #{order_number} includes {items_description}. "
+                f"The subtotal for {subtotal_quantity} item(s) is {currency}{subtotal_price}, and the total weight is {total_weight} lbs. "
+                f"It was paid via {payment_gateway} and {fulfillment_status.lower()} via {shipping_method} for {currency}{shipping_cost}. "
+                f"The financial status is {financial_status.lower()}, and the return status is {return_status.lower().replace('_', ' ')}. "
+                f"The order was created on {created_at.split('T')[0]} and completed on {closed_at.split('T')[0]}. "
+                f"{'The order was not cancelled.' if cancellation is None else 'The order was cancelled.'} "
+                f"{'No cancellation reason was provided.' if cancel_reason is None else f'The cancellation reason was: {cancel_reason}.'} "
+                f"{'No cancellation date was recorded.' if cancelled_at is None else f'The order was cancelled on {cancelled_at.split("T")[0]}.'}"
+            )
+
+            # Add confirmation question
+            responseMessage += "\n\nDoes this answer your question, or would you like additional information?"
+
+            return JSONResponse(status_code=200, content={"result": responseMessage})
+        else:
+            raise HTTPException(status_code=404, detail="Order not found")
     except Exception as e:
         logger.error(f"Failed to parse request body: {e}")
         raise HTTPException(status_code=400, detail="Invalid request body")

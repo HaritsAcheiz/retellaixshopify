@@ -924,11 +924,58 @@ class ShopifyApp:
                     orders(first:250, query:$query) {
                         edges {
                             node {
-                                id
+                                name
+                                lineItems(first: 250){
+                                    edges{
+                                        node{
+                                            name
+                                            currentQuantity
+                                            originalUnitPriceSet{
+                                                shopMoney{
+                                                    amount
+                                                    currencyCode
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
+                                currentSubtotalLineItemsQuantity
+                                currentSubtotalPriceSet{
+                                    shopMoney{
+                                        amount
+                                        currencyCode
+                                    }
+                                }
+                                currentTotalWeight
+                                paymentGatewayNames
+                                shippingLines(first: 250){
+                                    edges{
+                                        node{
+                                            title
+                                            currentDiscountedPriceSet{
+                                                shopMoney{
+                                                    amount
+                                                    currencyCode
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                displayFinancialStatus
+                                displayFulfillmentStatus
+                                returnStatus
+                                cancellation{
+                                    staffNote
+                                }
+                                cancelReason
+                                currentTotalWeight
+                                cancelledAt
+                                createdAt
+                                closedAt
                             }
                         }
                     }
+                }
                 '''
 
         variables = {'query': "name:{}".format(order_number)}
