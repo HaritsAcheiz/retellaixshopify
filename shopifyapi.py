@@ -961,8 +961,20 @@ class ShopifyApp:
                                         }
                                     }
                                 }
+                                fulfillments(first:250){
+                                    name
+                                    createdAt
+                                    deliveredAt
+                                    inTransitAt
+                                    estimatedDeliveryAt
+                                    displayStatus
+                                    trackingInfo(first:250){
+                                        company
+                                        number
+                                        url
+                                    }
+                                }
                                 displayFinancialStatus
-                                displayFulfillmentStatus
                                 returnStatus
                                 cancellation{
                                     staffNote
@@ -1812,7 +1824,7 @@ class ShopifyApp:
 
 if __name__ == '__main__':
 
-    s = ShopifyApp(store_name=os.getenv('STORE_NAME_DEV'), access_token=os.getenv('ACCESSTOKEN_DEV'), api_version='2025-01')
+    s = ShopifyApp(store_name=os.getenv('TRENDTIME_STORE_NAME'), access_token=os.getenv('TRENDTIME_ACCESS_TOKEN'), api_version='2025-01')
     client = s.create_session()
 
     # handles = ['38-exit-ez-fx-kit', 'rest-in-peace-cross-tombstone']

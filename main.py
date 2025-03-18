@@ -73,7 +73,7 @@ shipments_db = {
 async def get_order_status(request: Request):
     try:
         # Define Shopify App
-        s = ShopifyApp(store_name=os.getenv('STORE_NAME'), access_token=os.getenv('SHOPIFY_ACCESS_TOKEN'), api_version=os.getenv('API_VERSION'))
+        s = ShopifyApp(store_name=os.getenv('TRENDTIME_STORE_NAME'), access_token=os.getenv('TRENDTIME_ACCESS_TOKEN'), api_version=os.getenv('API_VERSION'))
         client = s.create_session()
 
         data = await request.json()
@@ -82,10 +82,12 @@ async def get_order_status(request: Request):
         response = s.get_orders(client, orderNumber)
 
         order_data = response.json()
+        print(order_data)
         order = order_data['data']['orders']['edges'][0]['node']
         order_number = order['name']
 
         if orderNumber == order_number:
+            # Extract all relevant information
             line_items = order['lineItems']['edges']
             subtotal_quantity = order['currentSubtotalLineItemsQuantity']
             subtotal_price = order['currentSubtotalPriceSet']['shopMoney']['amount']
@@ -95,13 +97,17 @@ async def get_order_status(request: Request):
             shipping_method = order['shippingLines']['edges'][0]['node']['title']
             shipping_cost = order['shippingLines']['edges'][0]['node']['currentDiscountedPriceSet']['shopMoney']['amount']
             financial_status = order['displayFinancialStatus']
-            fulfillment_status = order['displayFulfillmentStatus']
+            fulfillment_status = order['fulfillments'][0]['displayStatus']
             return_status = order['returnStatus']
             cancellation = order['cancellation']
             cancel_reason = order['cancelReason']
             cancelled_at = order['cancelledAt']
             created_at = order['createdAt']
             closed_at = order['closedAt']
+            fulfillment = order['fulfillments'][0]
+            tracking_company = fulfillment['trackingInfo'][0]['company'] if fulfillment['trackingInfo'] else None
+            tracking_number = fulfillment['trackingInfo'][0]['number'] if fulfillment['trackingInfo'] else None
+            tracking_link = fulfillment['trackingInfo'][0]['url'] if fulfillment['trackingInfo'] else None
 
             # Format the list of items
             items_list = []
@@ -128,7 +134,9 @@ async def get_order_status(request: Request):
                 f"The order was created on {created_at.split('T')[0]} and completed on {closed_at.split('T')[0]}. "
                 f"{'The order was not cancelled.' if cancellation is None else 'The order was cancelled.'} "
                 f"{'No cancellation reason was provided.' if cancel_reason is None else f'The cancellation reason was: {cancel_reason}.'} "
-                f"{'No cancellation date was recorded.' if cancelled_at is None else f'The order was cancelled on {cancelled_at.split("T")[0]}.'}"
+                f'''{'No cancellation date was recorded.' if cancelled_at is None else f'The order was cancelled on {cancelled_at.split("T")[0]}.'} '''
+                f"The fulfillment status is {fulfillment_status.lower()}, and the tracking company is {tracking_company if tracking_company else 'not available'}, with tracking number {tracking_number if tracking_number else 'not available'} and tracking link {tracking_link if tracking_link else 'not available'}. "
+                f"{'The order was delivered on ' + fulfillment['deliveredAt'].split('T')[0] + '.' if fulfillment_status == 'DELIVERED' else 'The estimated delivery date is ' + fulfillment['estimatedDeliveryAt'].split('T')[0] + '.'}"
             )
 
             # Add confirmation question
@@ -153,7 +161,7 @@ async def get_product_details(request: Request):
         productName = data['args']['productName']
         if productName in products_db:
             productDetails = products_db['productName']
-            responseMessage = f"Your order {orderNumber} is currently {productDetails['status']}. It was placed on {productDetails['orderDate']} and is estimated to arrive by {productDetails['estimatedDelivery']}."
+            responseMessage = f"Your order {productName} is currently {productDetails['status']}. It was placed on {productDetails['orderDate']} and is estimated to arrive by {productDetails['estimatedDelivery']}."
 
             return JSONResponse(status_code=200, content={"result": responseMessage})
         else:
@@ -163,23 +171,18 @@ async def get_product_details(request: Request):
         raise HTTPException(status_code=400, detail="Invalid request body")
 
 # Custom function: Check shipment status
-@app.post("/shipment")
-async def check_shipment_status(request: Request):
+@app.post("/trackinglink")
+async def send_tracking_link(request: Request):
     try:
-        # Define Shopify App
-        s = ShopifyApp(store_name=os.getenv('STORE_NAME'), access_token=os.getenv('SHOPIFY_ACCESS_TOKEN'), api_version=os.getenv('API_VERSION'))
-        client = s.create_session()
-
         data = await request.json()
-        airwayBill = request.airwayBill
-
-        if airwayBill in shipments_db:
-            shipmentDetails = shipments_db['airwayBill']
-            responseMessage = f"Your order {airwayBill} is currently {shipmentDetails['status']}. It was placed on {shipmentDetails['orderDate']} and is estimated to arrive by {shipmentDetails['estimatedDelivery']}."
-
+        print(data)
+        customerEmail = data['args']['customerEmail']
+        trackingLink = data['args']['trackingLink']
+        if customerEmail:
+            responseMessage = 'Tracking Link was sent'
             return JSONResponse(status_code=200, content={"result": responseMessage})
         else:
-            raise HTTPException(status_code=404, detail="Shipment not found")
+            raise HTTPException(status_code=404, detail="email not found")
     except Exception as e:
         logger.error(f"Failed to parse request body: {e}")
         raise HTTPException(status_code=400, detail="Invalid request body")
