@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - Shopify App</title>
+    <link rel="stylesheet" href="https://unpkg.com/@shopify/polaris/build/esm/styles.css">
+    <style>
+        .error-container {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .error-message {
+            color: #bf0711;
+            margin: 20px 0;
+        }
+        .back-button {
+            background-color: #008060;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .back-button:hover {
+            background-color: #006e52;
+        }
+    </style>
+</head>
+<body>
+    <div class="Polaris-Page">
+        <div class="error-container">
+            <h1 class="Polaris-DisplayText--sizeLarge">Oops! Something went wrong</h1>
+            <p class="error-message">{{ error }}</p>
+            <a href="{{ url_for('index') }}" class="back-button">Back to Home</a>
+        </div>
+    </div>
+</body>
+</html>

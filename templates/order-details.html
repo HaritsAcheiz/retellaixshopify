@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details</title>
+
+    <!-- Polaris Styles -->
+    <link rel="stylesheet" href="https://unpkg.com/@shopify/polaris@latest/build/esm/styles.css">
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="/static/styles.css">
+
+</head>
+<body>
+    <div class="Polaris-Page">
+        <div class="order-header">
+            <div>
+                <h1 class="order-section-title" id="orderName">{{ order_data.no }}</h1>
+                <div class="order-section-content">
+                    <p>{{ order_data.date }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-section">
+            <h2 class="order-section-title">Order Status</h2>
+            <div class="order-section-content">
+                <p>Status: <strong>{{ order_data.fulfillmentStatus }}</strong></p>
+            </div>
+        </div>
+
+        <div class="order-section">
+            <h2 class="order-section-title">Items</h2>
+            <div class="order-section-content">
+                <ul>
+                    {% if order_data._items %}
+                        {% for item in order_data._items %}
+                            <li>{{ item.title }} - {{ item.currentQuantity }} × {{ item.variant.price }}</li>
+                        {% endfor %}
+                    {% else %}
+                        <li>No items found</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="order-section">
+            <h2 class="order-section-title">
+                <span class="status-icon">✓</span>
+                Paid
+            </h2>
+            <div class="order-section-content">
+                <div class="payment-details">
+                    <div class="payment-row">
+                        <div class="payment-label">Subtotal</div>
+                        <div class="payment-info">{{ order_data._items|length }} item</div>
+                        <div class="payment-amount">${{ order_data.subtotal }}</div>
+                    </div>
+
+                    <div class="payment-row total-row">
+                        <div class="payment-label">Additional</div>
+                        <div class="payment-amount">${{ order_data.additional }}</div>
+                    </div>
+
+                    <div class="payment-row total-row">
+                        <div class="payment-label">Tax</div>
+                        <div class="payment-amount">${{ order_data.tax }}</div>
+                    </div>
+
+                    {% for tax in order_data.taxes %}
+                    <div class="payment-row tax-row">
+                        <div class="payment-label">{{ tax.title }}</div>
+                        <div class="payment-info">{{ tax.rate }}%</div>
+                        <div class="payment-amount">${{ tax.amount }}</div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="payment-row total-row">
+                        <div class="payment-label">Shipping</div>
+                        <div class="payment-amount">${{ order_data.shipping }}</div>
+                    </div>
+
+                    <div class="payment-row total-row">
+                        <div class="payment-label">Duties</div>
+                        <div class="payment-amount">${{ order_data.duties }}</div>
+                    </div>
+
+                    <div class="payment-row total-row">
+                        <div class="payment-label">Discount</div>
+                        <div class="payment-amount">${{ order_data.discount }}</div>
+                    </div>
+
+                    <div class="payment-row total-row">
+                        <div class="payment-label">Total</div>
+                        <div class="payment-amount">${{ order_data.total }}</div>
+                    </div>
+
+                    <div class="payment-row paid-row">
+                        <div class="payment-label">Paid by customer</div>
+                        <div class="payment-amount">${{ order_data.paid }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-section">
+            <h2 class="order-section-title">Customer</h2>
+            <div class="order-section-content">
+                <p>Name: {{ order_data.customer.name }}</p>
+                <p>Email: {{ order_data.customer.email }}</p>
+                <p>Phone: {{ order_data.customer.phone }}</p>
+            </div>
+        </div>
+
+        <div class="order-section">
+            <h2 class="order-section-title">Shipping Address</h2>
+            <div class="order-section-content">
+                <p>{{ order_data.shippingAddress }}</p>
+            </div>
+        </div>
+
+        <div class="order-section-content">
+            <input type="text" id="originZipcode" placeholder="Enter ZIP Code" value="{{ default_zipcode }}">
+            <button id="getShippingOptionsBtn" onclick="fetchShippingOptions()" class="shipnow-button">Get Shipping Options</button>
+            <div id="loadingSpinner" style="display: none;" class="loading-spinner">
+                <img src="{{ url_for('static', filename='icons8-loading.gif') }}" alt="Loading..." />
+            </div>
+        </div>
+
+        <div class="order-section" id="shippingOptionsSection" style="display: none;">
+            <h2 class="order-section-title">Shipping Options</h2>
+            <div class="order-section-content">
+                <table class="shipping-options">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Total Cost</th>
+                            <th>Delivery Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shippingOptionsTable">
+                        <!-- Data will be inserted dynamically -->
+                    </tbody>
+                </table>
+            </div>
+</div>
+
+        <!-- Modal Popup -->
+        <div id="labelModal" class="modal">
+            <div class="modal-content">
+                <!-- Close button -->
+                <span class="close">&times;</span>
+                <!-- PDF viewer container -->
+                <iframe id="pdfViewer" width="100%" height="600px" style="border: none;"></iframe>
+            </div>
+        </div>
+
+    </div>
+
+    <script id="order-data" type="application/json">
+        {{ order_data | tojson | safe }}
+    </script>
+
+    <script src="{{ url_for('static', filename='order-details.js') }}"></script>
+
+</body>
+</html>

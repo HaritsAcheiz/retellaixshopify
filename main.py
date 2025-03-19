@@ -82,7 +82,6 @@ async def get_order_status(request: Request):
         response = s.get_orders(client, orderNumber)
 
         order_data = response.json()
-        print(order_data)
         order = order_data['data']['orders']['edges'][0]['node']
         order_number = order['name']
 
@@ -107,7 +106,6 @@ async def get_order_status(request: Request):
             fulfillment = order['fulfillments'][0]
             tracking_company = fulfillment['trackingInfo'][0]['company'] if fulfillment['trackingInfo'] else None
             tracking_number = fulfillment['trackingInfo'][0]['number'] if fulfillment['trackingInfo'] else None
-            tracking_link = fulfillment['trackingInfo'][0]['url'] if fulfillment['trackingInfo'] else None
 
             # Format the list of items
             items_list = []
@@ -126,23 +124,60 @@ async def get_order_status(request: Request):
                 items_description = ", ".join(items_list[:-1]) + f", and {items_list[-1]}"
 
             # Format the response using f-string with natural language
-            responseMessage = (
-                f"Your order #{order_number} includes {items_description}. "
-                f"The subtotal for {subtotal_quantity} item(s) is {currency}{subtotal_price}, and the total weight is {total_weight} lbs. "
-                f"It was paid via {payment_gateway} and {fulfillment_status.lower()} via {shipping_method} for {currency}{shipping_cost}. "
-                f"The financial status is {financial_status.lower()}, and the return status is {return_status.lower().replace('_', ' ')}. "
-                f"The order was created on {created_at.split('T')[0]} and completed on {closed_at.split('T')[0]}. "
-                f"{'The order was not cancelled.' if cancellation is None else 'The order was cancelled.'} "
-                f"{'No cancellation reason was provided.' if cancel_reason is None else f'The cancellation reason was: {cancel_reason}.'} "
-                f'''{'No cancellation date was recorded.' if cancelled_at is None else f'The order was cancelled on {cancelled_at.split("T")[0]}.'} '''
-                f"The fulfillment status is {fulfillment_status.lower()}, and the tracking company is {tracking_company if tracking_company else 'not available'}, with tracking number {tracking_number if tracking_number else 'not available'} and tracking link {tracking_link if tracking_link else 'not available'}. "
-                f"{'The order was delivered on ' + fulfillment['deliveredAt'].split('T')[0] + '.' if fulfillment_status == 'DELIVERED' else 'The estimated delivery date is ' + fulfillment['estimatedDeliveryAt'].split('T')[0] + '.'}"
-            )
+            # responseMessage = (
+            #     f"Your order #{order_number} includes {items_description}. "
+            #     f"The subtotal for {subtotal_quantity} item(s) is {currency}{subtotal_price}, and the total weight is {total_weight} lbs. "
+            #     f"It was paid via {payment_gateway} and {fulfillment_status.lower()} via {shipping_method} for {currency}{shipping_cost}. "
+            #     f"The financial status is {financial_status.lower()}, and the return status is {return_status.lower().replace('_', ' ')}. "
+            #     f"The order was created on {created_at.split('T')[0]} and completed on {closed_at.split('T')[0]}. "
+            #     f"{'The order was not cancelled.' if cancellation is None else 'The order was cancelled.'} "
+            #     f"{'No cancellation reason was provided.' if cancel_reason is None else f'The cancellation reason was: {cancel_reason}.'} "
+            #     f'''{'No cancellation date was recorded.' if cancelled_at is None else f'The order was cancelled on {cancelled_at.split("T")[0]}.'} '''
+            #     f"The fulfillment status is {fulfillment_status.lower()}, and the tracking company is {tracking_company if tracking_company else 'not available'}, with tracking number {tracking_number if tracking_number else 'not available'} and tracking link {tracking_link if tracking_link else 'not available'}. "
+            #     f"{'The order was delivered on ' + fulfillment['deliveredAt'].split('T')[0] + '.' if fulfillment_status == 'DELIVERED' else 'The estimated delivery date is ' + fulfillment['estimatedDeliveryAt'].split('T')[0] + '.'}"
+            # )
 
             # Add confirmation question
-            responseMessage += "\n\nDoes this answer your question, or would you like additional information?"
+            # responseMessage += "\n\nDoes this answer your question, or would you like additional information?"
+            result = {
+                "data": {
+                    "order_number": order_number,
+                    "items_description": items_description,
+                    "subtotal": {
+                        "quantity": subtotal_quantity,
+                        "subtotal_price": subtotal_price
+                    },
+                    "weight": {
+                        "total": total_weight,
+                        "unit": 'lbs'
+                    },
+                    "payment_gateway": payment_gateway,
+                    "fulfillment": {
+                        "status": fulfillment_status,
+                        "delivered_at": fulfillment['deliveredAt'],
+                        "estimated_delivery_at": fulfillment['estimatedDeliveryAt']
+                    },
+                    "shipping": {
+                        "method": shipping_method,
+                        "shipping_cost": shipping_cost
+                    },
+                    "financial_status": financial_status,
+                    "return_status": return_status,
+                    "cancellation": cancellation,
+                    "tracking": {
+                        "company": tracking_company,
+                        "number": tracking_number
+                    },
+                    "cancel_reason": cancel_reason,
+                    "cancelled_at": cancelled_at,
+                    "created_at": created_at,
+                    "closed_at": closed_at,
+                    "currency": currency
+                }
 
-            return JSONResponse(status_code=200, content={"result": responseMessage})
+            }
+
+            return JSONResponse(status_code=200, content={"result": result})
         else:
             raise HTTPException(status_code=404, detail="Order not found")
     except Exception as e:
@@ -171,13 +206,28 @@ async def get_product_details(request: Request):
         raise HTTPException(status_code=400, detail="Invalid request body")
 
 # Custom function: Check shipment status
-@app.post("/trackinglink")
-async def send_tracking_link(request: Request):
+@app.post("/email")
+async def send_details_email(request: Request):
     try:
         data = await request.json()
         print(data)
+        customerName = data['args']['customer']
         customerEmail = data['args']['customerEmail']
-        trackingLink = data['args']['trackingLink']
+        orderNumber = data['args']['orderNumber']
+
+        # Define Shopify App
+        s = ShopifyApp(store_name=os.getenv('TRENDTIME_STORE_NAME'), access_token=os.getenv('TRENDTIME_ACCESS_TOKEN'), api_version=os.getenv('API_VERSION'))
+        client = s.create_session()
+
+        data = await request.json()
+        orderNumber = data['args']['orderNumber']
+
+        response = s.get_orders(client, orderNumber)
+
+        order_data = response.json()
+        order = order_data['data']['orders']['edges'][0]['node']
+        order_number = order['name']
+
         if customerEmail:
             responseMessage = 'Tracking Link was sent'
             return JSONResponse(status_code=200, content={"result": responseMessage})

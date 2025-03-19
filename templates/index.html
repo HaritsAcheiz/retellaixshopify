@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Shipping Labels</title>
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="/static/styles.css">
+
+    <!-- Polaris Styles -->
+    <link rel="stylesheet" href="https://unpkg.com/@shopify/polaris@latest/build/esm/styles.css">
+
+    <!-- Font Awesome Styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- App Bridge -->
+    <script src="https://cdn.shopify.com/shopifycloud/app-bridge.js"></script>
+    
+    <script src="https://unpkg.com/@shopify/app-bridge"></script>
+
+</head>
+<body>
+    <div class="Polaris-Page">
+        <div class="Polaris-Page-Header">
+            <h1 class="Polaris-DisplayText--sizeLarge">Order Shipping Labels</h1>
+        </div>
+
+        <!-- Search Bar and Fetch Button -->
+        <div class="search-container">
+            <input
+                type="text"
+                id="searchBox"
+                placeholder="Search Order ID"
+            />
+            <button id="fetchButton" class="magnify-icon">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+
+        <div class="Polaris-Card">
+            <div class="Polaris-Card__Section">
+                <div id="errorContainer" style="display: none;" class="error"></div>
+                <div id="orderTableContainer">
+                    <table class="order-table">
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Date</th>
+                                <th>Customer</th>
+                                <th>Total Price</th>
+                                <th>Payment Status</th>
+                                <th>Fulfillment Status</th>
+                                <th>Shipping Address</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderTableBody">
+                            {% for order in orders %}
+                                <tr>
+                                    <td>{{ order.no }}</td>
+                                    <td>{{ order.date }}</td>
+                                    <td>{{ order.customer }}</td>
+                                    <td>{{ order.totalPrice }}</td>
+                                    <td>{{ order.paymentStatus }}</td>
+                                    <td>{{ order.fulfillmentStatus }}</td>
+                                    <td>{{ order.shippingAddress }}</td>
+                                    <!-- <td>{{ order.actions }}</td> -->
+                                    <td>
+                                        <button class="action-button" onclick="viewOrderDetails('{{ order.no }}')">View Details</button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- index js -->
+    <script src="{{ url_for('static', filename='index.js') }}" defer></script>
+
+</body>
+</html>
