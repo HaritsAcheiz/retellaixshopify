@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f5f5f5;
+        }
+        .footer {
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+            margin-top: 20px;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Order Details</h1>
+        <p>Dear <strong>{{customerName}}</strong>,</p>
+        <p>Thank you for your order! Below are the details of your purchase:</p>
+
+        <table>
+            <tr>
+                <th>Order Number</th>
+                <td>{{orderNumber}}</td>
+            </tr>
+            <tr>
+                <th>Customer Email</th>
+                <td>{{customerEmail}}</td>
+            </tr>
+            <tr>
+                <th>Items Description</th>
+                <td>{{itemsDescription}}</td>
+            </tr>
+            <tr>
+                <th>Subtotal Price</th>
+                <td>{{subtotalPrice}} {{currency}}</td>
+            </tr>
+            <tr>
+                <th>Subtotal Qty</th>
+                <td>{{subtotalQuantity}}</td>
+            </tr>
+            <tr>
+                <th>Total Weight</th>
+                <td>{{totalWeight}} {{weightUnit}}</td>
+            </tr>
+            <tr>
+                <th>Payment Gateway</th>
+                <td>{{paymentGateway}}</td>
+            </tr>
+            <tr>
+                <th>Fulfillment Status</th>
+                <td>{{fulfillmentStatus}}</td>
+            </tr>
+            <tr>
+                <th>Estimate Delivered On</th>
+                <td>{{fulfillmentEstDeliveryAt}}</td>
+            </tr>
+            <tr>
+                <th>Delivered At</th>
+                <td>{{fulfillmentDeliveredAt}}</td>
+            </tr>
+            <tr>
+                <th>Shipping Method</th>
+                <td>{{shippingMethod}}</td>
+            </tr>
+            <tr>
+                <th>Shipping Cost</th>
+                <td>{{shippingCost}} {{currency}}</td>
+            </tr>
+            <tr>
+                <th>Financial Status</th>
+                <td>{{financialStatus}}</td>
+            </tr>
+            <tr>
+                <th>Return Status</th>
+                <td>{{returnStatus}}</td>
+            </tr>
+            <tr>
+                <th>Cancellation</th>
+                <td>{{cancellation}}</td>
+            </tr>
+            <tr>
+                <th>Tracking Number</th>
+                <td>{{trackingNumber}}</td>
+            </tr>
+            <tr>
+                <th>Shipping Company</th>
+                <td>{{trackingCompany}}</td>
+            </tr>
+            <tr>
+                <th>Cancel Reason</th>
+                <td>{{cancelReason}}</td>
+            </tr>
+            <tr>
+                <th>Cancelled At</th>
+                <td>{{cancelledAt}}</td>
+            </tr>
+            <tr>
+                <th>Created At</th>
+                <td>{{createdAt}}</td>
+            </tr>
+            <tr>
+                <th>Closed At</th>
+                <td>{{closedAt}}</td>
+            </tr>
+        </table>
+
+        <p>You can track shipment using the following link: <a href="{{trackingLink}}">Track Your shipment</a></p>
+
+        <p>If you have any questions or need further assistance, please feel free to contact us.</p>
+
+        <div class="footer">
+            <p>Thank you for shopping with us!</p>
+            <p>Best regards,<br>Trendtime</p>
+        </div>
+    </div>
+</body>
+</html>

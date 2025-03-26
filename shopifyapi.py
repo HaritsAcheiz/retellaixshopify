@@ -511,6 +511,69 @@ class ShopifyApp:
 
         return response.json()
 
+    def get_product_details_by_query(self, client, variables):
+        print('Getting product id...')
+        query = '''
+            query(
+                $query: String
+            )
+            {
+                products(first: 1, query: $query){
+                    edges{
+                        node{
+                            description
+                            title
+                            totalInventory
+                            variants(first: 10){
+                                edges{
+                                    node{
+                                        availableForSale
+                                        barcode
+                                        compareAtPrice
+                                        displayName
+                                        inventoryItem{
+                                            measurement{
+                                                weight{
+                                                    unit
+                                                    value
+                                                }
+                                            }
+                                            requiresShipping
+                                        }
+                                        inventoryQuantity
+                                        price
+                                        selectedOptions{
+                                            name
+                                            optionValue{
+                                                name
+                                                swatch{
+                                                    color
+                                                }
+                                            }
+                                        }
+                                        sku
+                                    }
+                                }
+                            }
+                            variantsCount{
+                                count
+                                precision
+                            }
+                            vendor
+                        }
+                    }
+                    pageInfo {
+                        endCursor
+                        hasNextPage
+                    }
+                }
+            }
+        '''
+
+        response = self.send_request(client, query=query, variables=variables)
+
+        return response
+
     def get_variants(self, client, sku):
         print("Getting variant...")
         query = '''
@@ -984,6 +1047,30 @@ class ShopifyApp:
                                 cancelledAt
                                 createdAt
                                 closedAt
+                            }
+                        }
+                    }
+                }
+                '''
+
+        variables = {'query': "name:{}".format(order_number)}
+
+        response = self.send_request(client, query=query, variables=variables)
+
+        return response
+
+    ## Tracking Llink
+    def get_tracking_link(self, client, order_number):
+        query = '''
+                query getOrders($query:String!){
+                    orders(first:250, query:$query) {
+                        edges {
+                            node {
+                                fulfillments(first:250){
+                                    trackingInfo(first:250){
+                                        url
+                                    }
+                                }
                             }
                         }
                     }
