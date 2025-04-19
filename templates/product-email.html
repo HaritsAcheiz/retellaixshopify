@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details</title>
+    <style>
+        body{
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        h2 {
+            font-size: 20px;
+            color: #444;
+            margin-top: 25px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        .product-title {
+            flex: 1;
+        }
+        .product-meta {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .description {
+            margin-bottom: 20px;
+            white-space: pre-line;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f5f5f5;
+            text-align: left;
+            padding: 10px;
+        }
+        td {
+            padding: 10px;
+        }
+        .variant-row {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .variant-header {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #444;
+        }
+        .price-comparison {
+            display: flex;
+            gap: 15px;
+        }
+        .current-price {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+        .original-price {
+            text-decoration: line-through;
+            color: #777;
+        }
+        .availability {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .available {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .unavailable {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        .footer {
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        .specs {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+        .specs h3 {
+            margin-top: 0;
+        }
+        .specs-list {
+            columns: 2;
+            column-gap: 20px;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #F0F8FF;
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 4px;
+            margin: 20px 0;
+            transition: background-color 0.3s;
+        }
+        .cta-button:hover {
+            background-color: #E9F5FF;
+        }
+        .button-container {
+            text-align: center;
+            margin: 25px 0;
+        }
+        @media (max-width: 600px) {
+            .specs-list {
+                columns: 1;
+            }
+            .product-header {
+                flex-direction: column;
+            }
+            .product-meta {
+                margin-top: 15px;
+                width: 100%;
+            }
+            .cta-button {
+                width: 100%;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% for product in data.products.edges %}
+        <div class="product-header">
+            <div class="product-title">
+                <h1>{{ product.node.title }}</h1>
+                <div class="vendor">Vendor: <strong>{{ product.node.vendor }}</strong></div>
+            </div>
+            <div class="product-meta">
+                <div>Total Variants: <strong>{{ product.node.variantsCount.count }}</strong></div>
+                <div>Total Inventory: <strong>{{ product.node.totalInventory }}</strong></div>
+            </div>
+        </div>
+
+        <h2>Product Description</h2>
+        <div class="description">{{ product.node.description }}</div>
+
+        <div class="button-container">
+            <a href="{{ product.onlineStoreUrl }}" class="cta-button">
+                {% if product.node.totalInventory > 0 %}
+                    Buy Now on Our Store
+                {% else %}
+                    View Product on Our Store
+                {% endif %}
+            </a>
+        </div>
+
+        <h2>Available Variants</h2>
+        {% for variant in product.node.variants.edges %}
+        <div class="variant-row">
+            <div class="variant-header">{{ variant.node.displayName }}</div>
+
+            <table>
+                <tr>
+                    <th>SKU</th>
+                    <td>{{ variant.node.sku }}</td>
+                </tr>
+                <tr>
+                    <th>Availability</th>
+                    <td>
+                        <span class="availability {% if variant.node.availableForSale %}available{% else %}unavailable{% endif %}">
+                            {% if variant.node.availableForSale %}Available{% else %}Unavailable{% endif %}
+                        </span>
+                        ({{ variant.node.inventoryQuantity }} in stock)
+                    </td>
+                </tr>
+                <tr>
+                    <th>Pricing</th>
+                    <td>
+                        <div class="price-comparison">
+                            <span class="current-price">${{ variant.node.price }}</span>
+                            {% if variant.node.compareAtPrice %}
+                            <span class="original-price">${{ variant.node.compareAtPrice }}</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Color</th>
+                    <td>{{ variant.node.selectedOptions.0.optionValue.name }}</td>
+                </tr>
+                <tr>
+                    <th>Shipping Weight</th>
+                    <td>{{ variant.node.inventoryItem.measurement.weight.value }} {{ variant.node.inventoryItem.measurement.weight.unit }}</td>
+                </tr>
+            </table>
+        </div>
+        {% endfor %}
+        {% endfor %}
+
+        <div class="footer">
+            <p>Have questions? Call our personal shopper at 1-800-350-5420, 24 hours a day.</p>
+            <p>Thank you for shopping with Trend Times Toys & Hobbies!</p>
+        </div>
+    </div>
+</body>
+</html>

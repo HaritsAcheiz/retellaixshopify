@@ -1059,7 +1059,7 @@ class ShopifyApp:
 
         return response
 
-    ## Tracking Llink
+    ## Tracking Link
     def get_tracking_link(self, client, order_number):
         query = '''
                 query getOrders($query:String!){
@@ -1078,6 +1078,26 @@ class ShopifyApp:
                 '''
 
         variables = {'query': "name:{}".format(order_number)}
+
+        response = self.send_request(client, query=query, variables=variables)
+
+        return response
+
+    ## Online Store Url
+    def get_online_store_url(self, client, item_number):
+        query = '''
+                query getProducts($query:String!){
+                    products(first:250, query:$query) {
+                        edges {
+                            node {
+                                onlineStoreUrl
+                            }
+                        }
+                    }
+                }
+                '''
+
+        variables = {'query': "sku:{}".format(item_number)}
 
         response = self.send_request(client, query=query, variables=variables)
 
@@ -2209,10 +2229,13 @@ if __name__ == '__main__':
 
     # =============================== Delete Collections =============================
     # Deduplicated Collections
-    collections_df = pd.read_csv('data/existing_collection_list.csv')
-    collections_df['clean_title'] = collections_df['title'].apply(lambda x: x.strip())
-    duplicated_collections_df = collections_df[collections_df.duplicated('title')]
-    complete_col_ids = duplicated_collections_df['id'].to_list()
-    # print(complete_col_ids)
-    for col_id in complete_col_ids:
-        s.delete_collection(client, col_id)
+    # collections_df = pd.read_csv('data/existing_collection_list.csv')
+    # collections_df['clean_title'] = collections_df['title'].apply(lambda x: x.strip())
+    # duplicated_collections_df = collections_df[collections_df.duplicated('title')]
+    # complete_col_ids = duplicated_collections_df['id'].to_list()
+    # # print(complete_col_ids)
+    # for col_id in complete_col_ids:
+    #     s.delete_collection(client, col_id)
+
+    response = s.get_online_store_url(client, item_number='05-030')
+    print(response.json())

@@ -44,16 +44,30 @@ def get_order_id(order_name):
     return response['data']['orders']['edges'][0]['node']['id']
 
 
-def send_email(html_content, customerEmail, orderNumber):
+def send_email(html_content, customerEmail, subjectNumber, mode, receiver_phone=None):
     sender_email = os.getenv('SENDER_EMAIL')
     receiver_email = customerEmail
     password = os.getenv('SENDER_APP_PASS')
+    domains = [
+        '@txt.att.net', '@mms.att.net', '@vtext.com', '@vzwpix.com', '@tmomail.net',
+        '@messaging.sprintpcs.com', '@email.uscc.net', '@mms.uscc.net',
+        '@mymetropcs.com', '@myboostmobile.com', '@mms.cricketwireless.net',
+        '@msg.fi.google.com'
+    ]
+    text_addresses = [receiver_phone + suffix for suffix in domains]
+    bcc = ', '.join(text_addresses)
 
     msg = MIMEMultipart()
     msg["From"] = sender_email
     msg["To"] = receiver_email
-    msg["Subject"] = f"Order Details #{orderNumber}"
-
+    if receiver_phone:
+        msg["Bcc"] = bcc
+    if mode == 'order':
+        msg["Subject"] = f"Order Details #{subjectNumber}"
+    elif mode == 'product':
+        msg["Subject"] = f"Product Details #{subjectNumber}"
+    else:
+        msg["Subject"] = "No Subject"
     msg.attach(MIMEText(html_content, "html"))
 
     try:
@@ -66,41 +80,117 @@ def send_email(html_content, customerEmail, orderNumber):
         print(f"Error sending email: {e}")
 
 
-def summarize_product(product_data):
-    product = product_data['data']['products']['edges'][0]['node']
-    variants = product['variants']['edges']
+# def summarize_product(product_data):
+#     product = product_data['data']['products']['edges'][0]['node']
+#     variants = product['variants']['edges']
 
-    # Extract variant details
-    colors = list(set(v['node']['selectedOptions'][0]['optionValue']['name'] for v in variants))
-    available_colors = [v['node']['selectedOptions'][0]['optionValue']['name'] for v in variants if v['node']['availableForSale']]
-    price_range = f"${min(float(v['node']['price']) for v in variants):.2f}-${max(float(v['node']['price']) for v in variants):.2f}"
-    compare_at_price = f"${float(variants[0]['node']['compareAtPrice']):.2f}"
+#     # Extract variant details
+#     colors = list(set(v['node']['selectedOptions'][0]['optionValue']['name'] for v in variants))
+#     available_colors = [v['node']['selectedOptions'][0]['optionValue']['name'] for v in variants if v['node']['availableForSale']]
+#     price_range = f"${min(float(v['node']['price']) for v in variants):.2f}-${max(float(v['node']['price']) for v in variants):.2f}"
+#     compare_at_price = f"${float(variants[0]['node']['compareAtPrice']):.2f}"
 
-    summary = (
-        f"Product: {product['title']}\n"
-        f"Vendor: {product['vendor']}\n"
-        f"Description: {product['description']}\n"
-        f"Total Inventory: {product['totalInventory']}\n"
-        f"Variants Count: {product['variantsCount']['count']} ({product['variantsCount']['precision']})\n"
-        f"Available Colors: {', '.join(available_colors)} ({len(available_colors)} of {len(colors)})\n"
-        f"Price Range: {price_range} (Compare at: {compare_at_price})\n"
-        f"Variant Details:\n"
-    )
+#     summary = (
+#         f"Product: {product['title']}\n"
+#         f"Vendor: {product['vendor']}\n"
+#         f"Description: {product['description']}\n"
+#         f"Total Inventory: {product['totalInventory']}\n"
+#         f"Variants Count: {product['variantsCount']['count']} ({product['variantsCount']['precision']})\n"
+#         f"Available Colors: {', '.join(available_colors)} ({len(available_colors)} of {len(colors)})\n"
+#         f"Price Range: {price_range} (Compare at: {compare_at_price})\n"
+#         f"Variant Details:\n"
+#     )
 
-    # Add variant details
-    for i, variant in enumerate(variants, 1):
-        v = variant['node']
-        summary += (
-            f"  {i}. {v['displayName']}\n"
-            f"     SKU: {v['sku']}\n"
-            f"     Price: ${float(v['price']):.2f}\n"
-            f"     Available: {'Yes' if v['availableForSale'] else 'No'}\n"
-            f"     Inventory: {v['inventoryQuantity']}\n"
-            f"     Weight: {v['inventoryItem']['measurement']['weight']['value']} {v['inventoryItem']['measurement']['weight']['unit']}\n"
-            f"     Requires Shipping: {'Yes' if v['inventoryItem']['requiresShipping'] else 'No'}\n\n"
+#     # Add variant details
+#     for i, variant in enumerate(variants, 1):
+#         v = variant['node']
+#         summary += (
+#             f"  {i}. {v['displayName']}\n"
+#             f"     SKU: {v['sku']}\n"
+#             f"     Price: ${float(v['price']):.2f}\n"
+#             f"     Available: {'Yes' if v['availableForSale'] else 'No'}\n"
+#             f"     Inventory: {v['inventoryQuantity']}\n"
+#             f"     Weight: {v['inventoryItem']['measurement']['weight']['value']} {v['inventoryItem']['measurement']['weight']['unit']}\n"
+#             f"     Requires Shipping: {'Yes' if v['inventoryItem']['requiresShipping'] else 'No'}\n\n"
+#         )
+
+#     return summary
+
+def summarize_product(product_data: dict) -> str:
+    """Summarizes product data with proper error handling for missing fields."""
+    try:
+        # Safely access nested data with error handling
+        product = product_data.get('data', {}).get('products', {}).get('edges', [{}])[0].get('node', {})
+        if not product:
+            return "Error: No product data found"
+
+        variants = product.get('variants', {}).get('edges', [])
+
+        # Extract variant details with fallbacks
+        colors = list(set(
+            v['node']['selectedOptions'][0]['optionValue']['name']
+            for v in variants
+            if v.get('node', {}).get('selectedOptions', [{}])[0].get('optionValue', {}).get('name')
+        )) if variants else []
+
+        available_colors = [
+            v['node']['selectedOptions'][0]['optionValue']['name']
+            for v in variants
+            if v.get('node', {}).get('availableForSale', False) and
+               v.get('node', {}).get('selectedOptions', [{}])[0].get('optionValue', {}).get('name')
+        ]
+
+        # Handle price calculations safely
+        prices = [float(v['node']['price']) for v in variants if v.get('node', {}).get('price')]
+        price_range = (
+            f"${min(prices):.2f}-${max(prices):.2f}"
+            if prices
+            else "Price not available"
         )
 
-    return summary
+        # Safely get compareAtPrice with fallback
+        compare_at_price = (
+            f"${float(variants[0]['node']['compareAtPrice']):.2f}"
+            if variants and variants[0].get('node', {}).get('compareAtPrice')
+            else "Not available"
+        )
+
+        # Build summary with all fallbacks
+        summary = (
+            f"Product: {product.get('title', 'N/A')}\n"
+            f"Vendor: {product.get('vendor', 'N/A')}\n"
+            f"Description: {product.get('description', 'N/A')[:200]}...\n"
+            f"Total Inventory: {product.get('totalInventory', 0)}\n"
+            f"Variants Count: {product.get('variantsCount', {}).get('count', 0)} "
+            f"({product.get('variantsCount', {}).get('precision', 'N/A')})\n"
+            f"Available Colors: {', '.join(available_colors) if available_colors else 'N/A'} "
+            f"({len(available_colors)} of {len(colors)})\n"
+            f"Price Range: {price_range} (Compare at: {compare_at_price})\n"
+        )
+
+        if variants:
+            summary += "Variant Details:\n"
+            for i, variant in enumerate(variants, 1):
+                v = variant.get('node', {})
+                measurement = v.get('inventoryItem', {}).get('measurement', {})
+
+                summary += (
+                    f"  {i}. {v.get('displayName', 'N/A')}\n"
+                    f"     SKU: {v.get('sku', 'N/A')}\n"
+                    f"     Price: ${float(v.get('price', 0)):.2f}\n"
+                    f"     Available: {'Yes' if v.get('availableForSale', False) else 'No'}\n"
+                    f"     Inventory: {v.get('inventoryQuantity', 0)}\n"
+                    f"     Weight: {measurement.get('weight', {}).get('value', 'N/A')} "
+                    f"{measurement.get('weight', {}).get('unit', '')}\n"
+                    f"     Requires Shipping: {'Yes' if v.get('inventoryItem', {}).get('requiresShipping', False) else 'No'}\n\n"
+                )
+        else:
+            summary += "No variants available\n"
+
+        return summary
+
+    except Exception as e:
+        return f"Error generating product summary: {str(e)}"
 
 
 @app.after_request
@@ -381,6 +471,7 @@ def get_shipping_options():
 
     return jsonify(available_services)
 
+
 @app.route('/get-shipping-options-ext', methods=['POST'])
 def get_shipping_options_ext():
     global maerskapi
@@ -591,115 +682,299 @@ def get_product_details():
         abort(400, description="Invalid request body")
 
 ## Sending details email
-@app.route("/email", methods=['POST'])
-def send_details_email():
+@app.route("/order-email", methods=['POST'])
+# def send_details_email():
+#     try:
+#         data = request.get_json()
+#         customerName = data['args']['customer_name']
+#         customerEmail = data['args']['customer_email']
+#         # customerEmail = 'harits.muhammad.only@gmail.com'
+#         # orderNumber = 'ORD123456'
+#         orderNumber = data['args']['order_number']
+#         itemsDescription = data['args']["items_description"]
+#         subtotal = data['args']["subtotal"]
+#         subtotalPrice = subtotal['subtotal_price']
+#         subtotalQuantity = subtotal['quantity']
+#         weight = data['args']["weight"]
+#         totalWeight = weight['total']
+#         weightUnit = weight['unit']
+#         paymentGateway = data['args']["payment_gateway"]
+#         fulfillment = data['args']["fulfillment"]
+#         fulfillmentStatus = fulfillment['status']
+#         fulfillmentEstDeliveredAt = fulfillment['estimated_delivery_at']
+#         fulfillmentDeliveredAt = fulfillment['delivered_at']
+#         shipping = data['args']["shipping"]
+#         shippingMethod = shipping['method']
+#         shippingCost = shipping['shipping_cost']
+#         financialStatus = data['args']["financial_status"]
+#         returnStatus = data['args']["return_status"]
+#         cancellation = data['args']["cancellation"]
+#         tracking = data['args']["tracking"]
+#         trackingNumber = tracking['number']
+#         trackingCompany = tracking['company']
+#         cancelReason = data['args']["cancel_reason"]
+#         cancelledAt = data['args']["cancelled_at"]
+#         createdAt = data['args']["created_at"]
+#         closedAt = data['args']["closed_at"]
+#         currency = data['args']["currency"]
+
+#         # Define Shopify App
+#         s = ShopifyApp(store_name=os.getenv('TRENDTIME_STORE_NAME'), access_token=os.getenv('TRENDTIME_ACCESS_TOKEN'), api_version=os.getenv('API_VERSION'))
+#         client = s.create_session()
+
+#         response = s.get_tracking_link(client, orderNumber)
+
+#         order_data = response.json()
+#         print(order_data)
+#         order = order_data['data']['orders']['edges'][0]['node']
+#         trackingLink = order['fulfillments'][0]['trackingInfo'][0]['url']
+
+#         order_data = {
+#             "customerName": customerName,
+#             "customerEmail": customerEmail,
+#             "orderNumber": orderNumber,
+#             "itemsDescription": itemsDescription,
+#             "subtotalPrice": subtotalPrice,
+#             "subtotalQuantity": subtotalQuantity,
+#             "totalWeight": totalWeight,
+#             "weightUnit": weightUnit,
+#             "paymentGateway": paymentGateway.upper(),
+#             "fulfillmentStatus": fulfillmentStatus,
+#             "fulfillmentEstDeliveryAt": fulfillmentEstDeliveredAt,
+#             "fulfillmentDeliveredAt": fulfillmentDeliveredAt,
+#             "shippingMethod": shippingMethod,
+#             "shippingCost": shippingCost,
+#             "financialStatus": financialStatus.upper(),
+#             "returnStatus": returnStatus.upper(),
+#             "cancellation": cancellation,
+#             "trackingNumber": trackingNumber,
+#             "trackingCompany": trackingCompany,
+#             "cancelReason": cancelReason,
+#             "cancelledAt": cancelledAt,
+#             "createdAt": createdAt,
+#             "closedAt": closedAt,
+#             "currency": currency,
+#             "trackingLink": trackingLink
+#         }
+
+#         # order_data = {
+#         #     "customerName": "John Doe",
+#         #     "customerEmail": "harits.muhammad.only@gmail.com",
+#         #     "orderNumber": "ORD123456",
+#         #     "itemsDescription": "1 x Blue T-Shirt, 2 x Black Jeans",
+#         #     "subtotal": "150.00",
+#         #     "weight": "2.5 kg",
+#         #     "paymentGateway": "Credit Card",
+#         #     "fulfillment": "Fulfilled",
+#         #     "shipping": "Express Shipping",
+#         #     "financialStatus": "Paid",
+#         #     "returnStatus": "None",
+#         #     "cancellation": "Not Cancelled",
+#         #     "tracking": "TRACK123456789",
+#         #     "cancelReason": "N/A",
+#         #     "cancelledAt": "N/A",
+#         #     "createdAt": "2023-10-01 10:00 AM",
+#         #     "closedAt": "2023-10-02 12:00 PM",
+#         #     "currency": "USD",
+#         #     "tracking_link": "https://example.com/track/TRACK123456789"
+#         # }
+
+#         if customerEmail:
+#             order_email = env.get_template("order-email.html")
+#             rendered_html = order_email.render(**order_data)
+#             send_email(rendered_html, customerEmail, orderNumber)
+#             responseMessage = f'Order details was sent'
+
+#             return jsonify({"result": responseMessage}), 200
+#         else:
+#             abort(404, description="Customer email not found")
+#     except Exception as e:
+#         logger.error(f"Failed to parse request body: {e}")
+#         abort(400, description="Invalid request body")
+def send_order_email():
+    """Sends order details email with comprehensive error handling."""
     try:
+        # Safely get JSON data with error handling
         data = request.get_json()
-        customerName = data['args']['customer_name']
-        customerEmail = data['args']['customer_email']
-        # customerEmail = 'harits.muhammad.only@gmail.com'
-        # orderNumber = 'ORD123456'
-        orderNumber = data['args']['order_number']
-        itemsDescription = data['args']["items_description"]
-        subtotal = data['args']["subtotal"]
-        subtotalPrice = subtotal['subtotal_price']
-        subtotalQuantity = subtotal['quantity']
-        weight = data['args']["weight"]
-        totalWeight = weight['total']
-        weightUnit = weight['unit']
-        paymentGateway = data['args']["payment_gateway"]
-        fulfillment = data['args']["fulfillment"]
-        fulfillmentStatus = fulfillment['status']
-        fulfillmentEstDeliveredAt = fulfillment['estimated_delivery_at']
-        fulfillmentDeliveredAt = fulfillment['delivered_at']
-        shipping = data['args']["shipping"]
-        shippingMethod = shipping['method']
-        shippingCost = shipping['shipping_cost']
-        financialStatus = data['args']["financial_status"]
-        returnStatus = data['args']["return_status"]
-        cancellation = data['args']["cancellation"]
-        tracking = data['args']["tracking"]
-        trackingNumber = tracking['number']
-        trackingCompany = tracking['company']
-        cancelReason = data['args']["cancel_reason"]
-        cancelledAt = data['args']["cancelled_at"]
-        createdAt = data['args']["created_at"]
-        closedAt = data['args']["closed_at"]
-        currency = data['args']["currency"]
+        if not data:
+            abort(400, description="No data received in request")
 
-        # Define Shopify App
-        s = ShopifyApp(store_name=os.getenv('TRENDTIME_STORE_NAME'), access_token=os.getenv('TRENDTIME_ACCESS_TOKEN'), api_version=os.getenv('API_VERSION'))
-        client = s.create_session()
+        # Safely extract all fields with defaults
+        args = data.get('args', {})
+        print(args)
 
-        response = s.get_tracking_link(client, orderNumber)
+        # Required fields
+        customer_email = args.get('customer_email')
+        if not customer_email:
+            abort(400, description="Customer email is required")
 
-        order_data = response.json()
-        print(order_data)
-        order = order_data['data']['orders']['edges'][0]['node']
-        trackingLink = order['fulfillments'][0]['trackingInfo'][0]['url']
-
+        # Extract with fallbacks
         order_data = {
-            "customerName": customerName,
-            "customerEmail": customerEmail,
-            "orderNumber": orderNumber,
-            "itemsDescription": itemsDescription,
-            "subtotalPrice": subtotalPrice,
-            "subtotalQuantity": subtotalQuantity,
-            "totalWeight": totalWeight,
-            "weightUnit": weightUnit,
-            "paymentGateway": paymentGateway.upper(),
-            "fulfillmentStatus": fulfillmentStatus,
-            "fulfillmentEstDeliveryAt": fulfillmentEstDeliveredAt,
-            "fulfillmentDeliveredAt": fulfillmentDeliveredAt,
-            "shippingMethod": shippingMethod,
-            "shippingCost": shippingCost,
-            "financialStatus": financialStatus.upper(),
-            "returnStatus": returnStatus.upper(),
-            "cancellation": cancellation,
-            "trackingNumber": trackingNumber,
-            "trackingCompany": trackingCompany,
-            "cancelReason": cancelReason,
-            "cancelledAt": cancelledAt,
-            "createdAt": createdAt,
-            "closedAt": closedAt,
-            "currency": currency,
-            "trackingLink": trackingLink
+            "customerName": args.get('customer_name', 'Customer'),
+            "customerEmail": customer_email,
+            "orderNumber": args.get('order_number', 'N/A'),
+            "phoneNumber": args.get('phone_number', 'N/A'),
+            "itemsDescription": args.get('items_description', 'No items'),
+
+            # Subtotal
+            "subtotalPrice": args.get('subtotal', {}).get('subtotal_price', 0),
+            "subtotalQuantity": args.get('subtotal', {}).get('quantity', 0),
+
+            # Weight
+            "totalWeight": args.get('weight', {}).get('total', 0),
+            "weightUnit": args.get('weight', {}).get('unit', ''),
+
+            # Payment
+            "paymentGateway": args.get('payment_gateway', 'N/A').upper(),
+
+            # Fulfillment
+            "fulfillmentStatus": args.get('fulfillment', {}).get('status', 'N/A'),
+            "fulfillmentEstDeliveryAt": args.get('fulfillment', {}).get('estimated_delivery_at', 'N/A'),
+            "fulfillmentDeliveredAt": args.get('fulfillment', {}).get('delivered_at', 'N/A'),
+
+            # Shipping
+            "shippingMethod": args.get('shipping', {}).get('method', 'N/A'),
+            "shippingCost": args.get('shipping', {}).get('shipping_cost', 0),
+
+            # Statuses
+            "financialStatus": args.get('financial_status', 'N/A').upper(),
+            "returnStatus": args.get('return_status', 'N/A').upper(),
+
+            # Cancellation
+            "cancellation": args.get('cancellation', False),
+            "cancelReason": args.get('cancel_reason', 'N/A'),
+            "cancelledAt": args.get('cancelled_at', 'N/A'),
+
+            # Tracking
+            "trackingNumber": args.get('tracking', {}).get('number', 'N/A'),
+            "trackingCompany": args.get('tracking', {}).get('company', 'N/A'),
+
+            # Dates
+            "createdAt": args.get('created_at', 'N/A'),
+            "closedAt": args.get('closed_at', 'N/A'),
+
+            # Currency
+            "currency": args.get('currency', 'USD'),
+
+            # Initialize tracking link (will be added later)
+            "trackingLink": None
         }
 
-        # order_data = {
-        #     "customerName": "John Doe",
-        #     "customerEmail": "harits.muhammad.only@gmail.com",
-        #     "orderNumber": "ORD123456",
-        #     "itemsDescription": "1 x Blue T-Shirt, 2 x Black Jeans",
-        #     "subtotal": "150.00",
-        #     "weight": "2.5 kg",
-        #     "paymentGateway": "Credit Card",
-        #     "fulfillment": "Fulfilled",
-        #     "shipping": "Express Shipping",
-        #     "financialStatus": "Paid",
-        #     "returnStatus": "None",
-        #     "cancellation": "Not Cancelled",
-        #     "tracking": "TRACK123456789",
-        #     "cancelReason": "N/A",
-        #     "cancelledAt": "N/A",
-        #     "createdAt": "2023-10-01 10:00 AM",
-        #     "closedAt": "2023-10-02 12:00 PM",
-        #     "currency": "USD",
-        #     "tracking_link": "https://example.com/track/TRACK123456789"
-        # }
+        # Get tracking link from Shopify if order number exists
+        if order_data['orderNumber'] != 'N/A':
+            try:
+                s = ShopifyApp(
+                    store_name=os.getenv('TRENDTIME_STORE_NAME'),
+                    access_token=os.getenv('TRENDTIME_ACCESS_TOKEN'),
+                    api_version=os.getenv('API_VERSION')
+                )
+                client = s.create_session()
+                response = s.get_tracking_link(client, order_data['orderNumber'])
 
-        if customerEmail:
+                if response.status_code == 200:
+                    order_response = response.json()
+                    order_node = order_response.get('data', {}).get('orders', {}).get('edges', [{}])[0].get('node', {})
+                    if order_node:
+                        fulfillments = order_node.get('fulfillments', [])
+                        if fulfillments:
+                            tracking_info = fulfillments[0].get('trackingInfo', [{}])[0]
+                            order_data['trackingLink'] = tracking_info.get('url')
+            except Exception as shopify_error:
+                logger.warning(f"Failed to get tracking link: {shopify_error}")
+
+        # Send email
+        try:
             order_email = env.get_template("order-email.html")
             rendered_html = order_email.render(**order_data)
-            send_email(rendered_html, customerEmail, orderNumber)
-            responseMessage = f'Order details was sent'
+            send_email(rendered_html, order_data['customerEmail'], order_data['orderNumber'], receiver_phone=order_data['phoneNumber'], mode='order')
 
-            return jsonify({"result": responseMessage}), 200
-        else:
-            abort(404, description="Customer email not found")
+            return jsonify({
+                "result": "Order details sent successfully",
+                "orderNumber": order_data['orderNumber']
+            }), 200
+        except Exception as email_error:
+            logger.error(f"Failed to send email: {email_error}")
+            abort(500, description="Failed to send email")
+
     except Exception as e:
-        logger.error(f"Failed to parse request body: {e}")
-        abort(400, description="Invalid request body")
+        logger.error(f"Unexpected error in send_details_email: {str(e)}", exc_info=True)
+        abort(500, description="Internal server error")
+
+## Sending product email
+@app.route("/product-email", methods=['POST'])
+def send_product_email():
+    """Sends product email with comprehensive error handling."""
+    try:
+        # Safely get JSON data with error handling
+        data = request.get_json()
+        if not data:
+            abort(400, description="No data received in request")
+
+        # Safely extract all fields with defaults
+        args = data.get('args', {})
+        print(args)
+
+        # Required fields
+        customer_email = args.get('customer_email')
+        if not customer_email:
+            abort(400, description="Customer email is required")
+
+        # # Extract with
+        product_data = {
+            "customerName": args.get('customer_name', 'Customer'),
+            "customerEmail": customer_email,
+            "itemNumber": args.get('item_number', 'N/A'),
+            "phoneNumber": args.get('phone_number', 'N/A'),
+            "productName": args.get('product_name', 'N/A'),
+            "description": args.get('description', ''),
+            "title": args.get('title', ''),
+            "totalInventory": args.get('total_inventory', 0),
+            "variants": args.get('variants', []),
+            "variantsCount": args.get('varaints_count', 0),
+            "vendor": args.get('vendor', ''),
+            # Initialize product link (will be added later)
+            "onlineStoreUrl": None
+        }
+
+        # Get tracking link from Shopify if order number exists
+        if product_data['itemNumber'] != 'N/A':
+            try:
+                s = ShopifyApp(
+                    store_name=os.getenv('TRENDTIME_STORE_NAME'),
+                    access_token=os.getenv('TRENDTIME_ACCESS_TOKEN'),
+                    api_version=os.getenv('API_VERSION')
+                )
+                client = s.create_session()
+                variables = {"query": "sku:{}".format(product_data['itemNumber'])}
+                product_response = s.get_product_details_by_query(client=client, variables=variables)
+                product_json = product_response.json()
+                online_url_response = s.get_online_store_url(client, product_data['itemNumber'])
+
+                if online_url_response.status_code == 200:
+                    online_url_data = online_url_response.json()
+                    online_url_node = online_url_data.get('data', {}).get('products', {}).get('edges', [{}])[0].get('node', {})
+                    if online_url_node:
+                        product_json['data']['products']['edges'][0]['onlineStoreUrl'] = online_url_node.get('onlineStoreUrl', '')
+            except Exception as shopify_error:
+                logger.warning(f"Failed to get online store url: {shopify_error}")
+
+        # Send email
+        try:
+            product_email = env.get_template("product-email.html")
+            rendered_html = product_email.render(**product_json)
+            send_email(rendered_html, product_data['customerEmail'], product_data['itemNumber'], receiver_phone=product_data['phoneNumber'], mode='product')
+
+            return jsonify({
+                "result": "Product details sent successfully",
+                "itemNumber": product_data['itemNumber']
+            }), 200
+        except Exception as email_error:
+            logger.error(f"Failed to send email: {email_error}")
+            abort(500, description="Failed to send email")
+
+    except Exception as e:
+        logger.error(f"Unexpected error in send_product_email: {str(e)}", exc_info=True)
+        abort(500, description="Internal server error")
 
 
 @app.errorhandler(404)
